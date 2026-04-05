@@ -63,8 +63,6 @@ void Error_Handler(void);
 #define ADC_SAMPLE_V_GPIO_Port GPIOA
 #define KEY_MEAS_BASIC_Pin GPIO_PIN_2
 #define KEY_MEAS_BASIC_GPIO_Port GPIOA
-#define KEY_MEAS_EXTEND_Pin GPIO_PIN_3
-#define KEY_MEAS_EXTEND_GPIO_Port GPIOA
 #define DDS_CS_Pin GPIO_PIN_4
 #define DDS_CS_GPIO_Port GPIOA
 #define DDS_SCK_Pin GPIO_PIN_5
