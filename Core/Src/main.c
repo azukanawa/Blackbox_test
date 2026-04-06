@@ -70,10 +70,6 @@ I2C_HandleTypeDef hi2c1;
 SPI_HandleTypeDef hspi1;
 
 /* USER CODE BEGIN PV */
-SPI_HandleTypeDef hspi1;
-SPI_HandleTypeDef hspi1;               // SPI1外设句柄：驱动AD9833波形发生器
-ADC_HandleTypeDef hadc1;               // ADC1外设句柄：采集电压信号
-I2C_HandleTypeDef hi2c1;               // I2C1外设句柄：驱动OLED显示屏
 u8g2_t u8g2;                           // U8G2显示控制句柄：OLED屏幕操作核心
 uint16_t adc_dma_buf[ADC_SAMPLE_NUM];  // ADC DMA采样缓冲区：存储200次原始采样值
 /* USER CODE END PV */
@@ -302,7 +298,7 @@ static void MX_I2C1_Init(void)
 
     /* USER CODE END I2C1_Init 1 */
     hi2c1.Instance = I2C1;
-    hi2c1.Init.ClockSpeed = 400000;
+    hi2c1.Init.ClockSpeed = 100000;
     hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
     hi2c1.Init.OwnAddress1 = 0;
     hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
@@ -474,15 +470,37 @@ void AD9833_Init(void)
  */
 uint8_t u8x8_byte_stm32_hal_i2c(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr)
 {
-    uint8_t *data = (uint8_t *)arg_ptr;  // 转换数据指针类型
+    static uint8_t buffer[32];
+    static uint8_t buf_idx;
+    uint8_t *data;
 
-    // 仅处理U8G2数据发送消息：调用HAL库I2C发送函数
-    if (msg == U8X8_MSG_BYTE_SEND)
+    switch (msg)
     {
-        // OLED I2C地址0x78，左移1位适配HAL库7位地址格式
-        HAL_I2C_Master_Transmit(&hi2c1, 0x78 << 1, data, arg_int, 100);
+        case U8X8_MSG_BYTE_SEND:
+            data = (uint8_t *)arg_ptr;
+            while (arg_int > 0)
+            {
+                buffer[buf_idx++] = *data;
+                data++;
+                arg_int--;
+            }
+            break;
+        case U8X8_MSG_BYTE_INIT:
+            break;
+        case U8X8_MSG_BYTE_SET_DC:
+            break;
+        case U8X8_MSG_BYTE_START_TRANSFER:
+            buf_idx = 0;  // 传输开始重置索引，消除脏数据
+            break;
+        case U8X8_MSG_BYTE_END_TRANSFER:
+            // 你原本正常的发送方式，完全保留
+            HAL_I2C_Master_Transmit(&hi2c1, 0x3C << 1, buffer, buf_idx, 100);
+            buf_idx = 0;  // 传输结束重置索引，双重保险
+            break;
+        default:
+            return 0;
     }
-    return 1;  // 返回成功标识
+    return 1;
 }
 
 /**
@@ -496,12 +514,20 @@ uint8_t u8x8_byte_stm32_hal_i2c(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void
  */
 uint8_t u8x8_gpio_and_delay_stm32(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr)
 {
-    // 处理毫秒延时消息：调用HAL库延时函数
-    if (msg == U8X8_MSG_DELAY_MILLI)
+    switch (msg)
     {
-        HAL_Delay(arg_int);
+        case U8X8_MSG_DELAY_MILLI:
+            HAL_Delay(arg_int);
+            break;
+        case U8X8_MSG_DELAY_10MICRO:
+            HAL_Delay_us(10);
+            break;
+        case U8X8_MSG_DELAY_100NANO:
+            break;
+        default:
+            break;
     }
-    return 1;  // 返回成功标识
+    return 1;
 }
 
 /**
@@ -512,12 +538,24 @@ uint8_t u8x8_gpio_and_delay_stm32(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, vo
  */
 void OLED_Init(void)
 {
-    // 配置OLED驱动参数：I2C接口、128x64分辨率、绑定自定义驱动函数
+    // 1. 绑定驱动（参数顺序保持你正确的写法）
     u8g2_Setup_ssd1306_i2c_128x64_noname_f(&u8g2, U8G2_R0, u8x8_byte_stm32_hal_i2c, u8x8_gpio_and_delay_stm32);
-    u8g2_InitDisplay(&u8g2);                    // 初始化OLED硬件电路
-    u8g2_SetPowerSave(&u8g2, 0);                // 关闭省电模式，点亮屏幕
-    u8g2_ClearBuffer(&u8g2);                    // 清空显示缓冲区，避免开机乱码
-    u8g2_SetFont(&u8g2, u8g2_font_ncenB08_tr);  // 设置默认显示字体
+
+    // 2. 初始化屏幕硬件
+    u8g2_InitDisplay(&u8g2);
+
+    // 3. 上电稳定延时
+    HAL_Delay(100);
+
+    // 4. 关闭省电模式（点亮屏幕）
+    u8g2_SetPowerSave(&u8g2, 0);
+
+    // 5. 清空显存+刷新
+    u8g2_ClearBuffer(&u8g2);
+    u8g2_SendBuffer(&u8g2);
+
+    // 6. 设置字体
+    u8g2_SetFont(&u8g2, u8g2_font_ncenB08_tr);
 }
 
 /**
