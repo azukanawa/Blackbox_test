@@ -782,10 +782,10 @@ void Measure_Impedance(uint8_t port_x, uint8_t port_y, float *z, float *phase, u
  */
 float Get_Phase_Diff(void)
 {
-    uint32_t t1 = 0, t2 = 0;       // 两路信号过零时间戳
-    uint16_t val1, val2;           // ADC原始采样值
-    uint8_t flag1 = 0, flag2 = 0;  // 过零检测标志位
-
+    uint32_t t1 = 0, t2 = 0;                    // 两路信号过零时间戳
+    uint16_t val1, val2;                        // ADC原始采样值
+    uint8_t flag1 = 0, flag2 = 0;               // 过零检测标志位
+    uint16_t lastval1 = 2049, lastval2 = 2049;  // 上一次采集值
     // 最多检测1000次：防止程序卡死
     for (uint32_t i = 0; i < 1000; i++)
     {
@@ -812,16 +812,24 @@ float Get_Phase_Diff(void)
         HAL_ADC_Stop(&hadc1);
 
         // 检测通道0过零点：2048对应1.65V直流偏置中点
-        if (val1 > 2048 && flag1 == 0)
+        if (val1 >= 2048 && lastval1 <= 2048 && flag1 == 0)
         {
             t1 = HAL_GetTick();
             flag1 = 1;
         }
+        else
+        {
+            lastval1 = val1;
+        }
         // 检测通道1过零点
-        if (val2 > 2048 && flag2 == 0)
+        if (val2 >= 2048 && lastval2 <= 2048 && flag2 == 0)
         {
             t2 = HAL_GetTick();
             flag2 = 1;
+        }
+        else
+        {
+            lastval2 = val2;
         }
         // 两路均检测到过零：退出循环
         if (flag1 && flag2) break;
@@ -857,9 +865,9 @@ void Basic_Measure(void)
 
     // 判断拓扑：并联/交叉
     uint8_t is_parallel = 0;
-    if (type1 != 0 && type2 != 0 && type3 == 0 && type4 == 0)
+    if (type3 == 0 && type4 == 0)
         is_parallel = 1;
-    else if (type3 != 0 && type4 != 0 && type1 == 0 && type2 == 0)
+    else if (type1 == 0 && type2 == 0)
         is_parallel = 0;
 
     float z_a, z_b;
@@ -964,7 +972,7 @@ void Extend_Measure(void)
     // 测量拓展题核心端口
     Measure_Impedance(0, 2, &z1, &phase, &type1);
     Measure_Impedance(1, 3, &z2, &phase, &type2);
-    Measure_Impedance(0, 1, &z3, &phase, &type3);
+    Measure_Impedance(2, 3, &z3, &phase, &type3);
 
     // 判断题型：I型/II型（含短路）
     uint8_t is_type1 = 0;
