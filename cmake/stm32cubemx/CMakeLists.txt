@@ -8,7 +8,7 @@ set(MX_Defines_Syms
     $<$<CONFIG:Debug>:DEBUG>
 )
 
-# 头文件路径（Core/Inc已包含U8g2头文件，无需额外添加）
+# 头文件路径
 set(MX_Include_Dirs
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Core/Inc
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Drivers/STM32F1xx_HAL_Driver/Inc
@@ -17,7 +17,7 @@ set(MX_Include_Dirs
     ${CMAKE_CURRENT_SOURCE_DIR}/../../Drivers/CMSIS/Include
 )
 
-# 🔥 自动加载 Core/Src 下所有 .c 文件（包含U8g2+你的全部代码）
+#自动加载 Core/Src 下所有 .c 文件
 file(GLOB_RECURSE MX_Application_Src ${CMAKE_CURRENT_SOURCE_DIR}/../../Core/Src/*.c)
 # 追加启动文件（必须单独加）
 list(APPEND MX_Application_Src ${CMAKE_CURRENT_SOURCE_DIR}/../../startup_stm32f103xb.s)
@@ -45,9 +45,7 @@ set(STM32_Drivers_Src
 set(MX_LINK_DIRS)
 set(MX_LINK_LIBS STM32_Drivers ${TOOLCHAIN_LINK_LIBRARIES})
 
-# ==============================================
-# 🔥 关键：只定义一次库，无重复！（修复报错核心）
-# ==============================================
+
 add_library(stm32cubemx INTERFACE)
 target_include_directories(stm32cubemx INTERFACE ${MX_Include_Dirs})
 target_compile_definitions(stm32cubemx INTERFACE ${MX_Defines_Syms})
