@@ -57,6 +57,32 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define ADC_SAMPLE_I_Pin GPIO_PIN_0
+#define ADC_SAMPLE_I_GPIO_Port GPIOA
+#define ADC_SAMPLE_V_Pin GPIO_PIN_1
+#define ADC_SAMPLE_V_GPIO_Port GPIOA
+#define KEY_MEAS_BASIC_Pin GPIO_PIN_2
+#define KEY_MEAS_BASIC_GPIO_Port GPIOA
+#define DDS_CS_Pin GPIO_PIN_4
+#define DDS_CS_GPIO_Port GPIOA
+#define DDS_SCK_Pin GPIO_PIN_5
+#define DDS_SCK_GPIO_Port GPIOA
+#define DDS_MOSI_Pin GPIO_PIN_7
+#define DDS_MOSI_GPIO_Port GPIOA
+#define RELAY_RSEL_1K_Pin GPIO_PIN_0
+#define RELAY_RSEL_1K_GPIO_Port GPIOB
+#define RELAY_RSEL_10K_Pin GPIO_PIN_1
+#define RELAY_RSEL_10K_GPIO_Port GPIOB
+#define RELAY_RSEL_100K_Pin GPIO_PIN_2
+#define RELAY_RSEL_100K_GPIO_Port GPIOB
+#define RELAY_PORT_D_Pin GPIO_PIN_8
+#define RELAY_PORT_D_GPIO_Port GPIOA
+#define RELAY_PORT_A_Pin GPIO_PIN_3
+#define RELAY_PORT_A_GPIO_Port GPIOB
+#define RELAY_PORT_B_Pin GPIO_PIN_4
+#define RELAY_PORT_B_GPIO_Port GPIOB
+#define RELAY_PORT_C_Pin GPIO_PIN_5
+#define RELAY_PORT_C_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 

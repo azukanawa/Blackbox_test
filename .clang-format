@@ -1,0 +1,26 @@
+# 基于Google风格进行定制，它本身就是K&R风格（左大括号不换行）的一种
+BasedOnStyle: Google
+
+# ========== 缩进与空格 ==========
+# 使用4个空格进行缩进，不使用Tab
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+
+# ========== 大括号风格 ==========
+BreakBeforeBraces: Allman
+# ========== 函数定义 ==========
+# 即使是空函数，也禁止将其压缩为一行
+AllowShortFunctionsOnASingleLine: None
+
+# ========== 指针对齐 ==========
+# CubeMX通常使用"int *var"的形式，星号紧贴变量名
+PointerAlignment: Right
+
+# ========== 其他有用配置 ==========
+# 防止短代码块被压缩到一行
+AllowShortBlocksOnASingleLine: Never
+# 缩进case标签
+IndentCaseLabels: true
+# 设置代码行宽为120字符
+ColumnLimit: 120
